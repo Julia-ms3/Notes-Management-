@@ -1,12 +1,12 @@
 from fastapi import APIRouter, HTTPException
 from sqlalchemy import select
 
-from src.database import Base, engine
 from src.api.dependencies import SessionDepends
-from src.models import NoteModel
+from src.database import Base, engine
+from src.models import NoteHistoryModel, NoteModel
 from src.schemas import NoteAddSchema
 
-router = APIRouter()
+router = APIRouter(tags=["NOTES"])
 
 
 @router.post('/initialization')
@@ -50,6 +50,16 @@ async def update_note(note_id: int, session: SessionDepends, data: NoteAddSchema
     query = select(NoteModel).filter_by(id=note_id)
     result = await session.execute(query)
     note = result.scalar()
+
+    add_history = NoteHistoryModel(
+        note_id=note.id,
+        header=note.header,
+        description=note.description,
+        created=note.created,
+        updated=note.updated
+
+    )
+    session.add(add_history)
 
     if note is None:
         raise HTTPException(status_code=404, detail='this note not found')
