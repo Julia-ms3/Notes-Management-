@@ -1,3 +1,5 @@
+import logging
+
 from fastapi import APIRouter, HTTPException
 from sqlalchemy import select
 
@@ -47,6 +49,8 @@ async def get_note(note_id: int, session: SessionDepends):
 
 @router.put('/notes/{note_id}')
 async def update_note(note_id: int, session: SessionDepends, data: NoteAddSchema):
+    logging.debug(f"Fetching note with id: {note_id}")
+
     query = select(NoteModel).filter_by(id=note_id)
     result = await session.execute(query)
     note = result.scalar()
